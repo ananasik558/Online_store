@@ -11,6 +11,10 @@ from flask_bcrypt import Bcrypt
 from flask_login import UserMixin, current_user, login_required, login_user, LoginManager, logout_user
 from flask_bcrypt import Bcrypt
 from datetime import datetime
+import pandas as pd
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.feature_extraction.text import CountVectorizer
+from catboost import CatBoostClassifier
 #import psycopg2 
 
 app = Flask(__name__, template_folder='templates')
@@ -30,6 +34,24 @@ login_manager.init_app(app)
 
 login_manager.login_view = 'login'
 login_manager.login_message = 'Вы не можете получить достул к данной странице• Нужно сначала войти'
+
+def export_orders_data():
+    orders = db.session.query(Orders).all()
+    product_data = []
+
+    for order in orders:
+        product = Products.query.filter_by(name=order.product_name).first()
+        if product:
+            product_data.append({
+                'client_id': order.client_id,
+                'product_name': product.name,
+                'product_cost': product.cost,
+                'order_date': order.created_at
+            })
+
+    # Создание DataFrame и экспорт в CSV
+    df = pd.DataFrame(product_data)
+    df.to_csv('orders_data.csv', index=False)
 
 @login_manager.user_loader 
 def load_user(user_id):
@@ -224,6 +246,28 @@ def deal():
 	else:
 		return render_template('deal.html') 
 
+def get_product_recommendations(user_id):
+    df = pd.read_csv("orders_data.csv")
+    pivot_table = df.pivot_table(index='client_id', columns='product_name', aggfunc='size', fill_value=0)
+    
+    X = pivot_table.values
+    y = df['product_name'].values
+
+    model = CatBoostClassifier(iterations=100, learning_rate=0.1, depth=6)
+    model.fit(X, y)
+
+    user_profile = pivot_table.loc[user_id].values.reshape(1, -1)
+    predicted_probabilities = model.predict_proba(user_profile)
+    
+    user_products = set(pivot_table.loc[user_id][pivot_table.loc[user_id] > 0].index)
+    recommendations = sorted(
+        zip(pivot_table.columns, predicted_probabilities[0]), 
+        key=lambda x: x[1], 
+        reverse=True
+    )[:5]
+    
+    return [product[0] for product in recommendations if product[0] not in user_products]
+
 @app.route('/deals')
 @login_required
 def deals(): 
@@ -234,6 +278,23 @@ def deals():
 		order = Orders.query.filter_by(client_id=current_user.id).all()
 		return render_template('deals.html', order=order)
 
+@app.route('/recommendations')
+@login_required
+def recommendations():
+    try:
+        recommended_products = get_product_recommendations(current_user.id)
+
+        if not recommended_products:
+            flash("К сожалению, мы пока не можем порекомендовать ничего нового!", "info")
+            return redirect('/')
+
+        products_data = [Products.query.filter_by(name=name).first() for name in recommended_products]
+        return render_template('recommendations.html', products=products_data)
+
+    except Exception as e:
+        print(f"error - {str(e)}")
+        flash("Мы столкнулись с проблемой при генерации рекомендаций.", "danger")
+        return redirect('/')
 
 if __name__ == '__main__': 
 	app.run(debug=True) 

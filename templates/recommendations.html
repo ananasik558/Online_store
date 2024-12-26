@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Рекомендации</title>
+</head>
+<body>
+    <h1>Рекомендованные товары</h1>
+    <ul>
+        {% for product in products %}
+        <li>{{ product.name }} - {{ product.cost }} ₽</li>
+        {% endfor %}
+    </ul>
+    <a href="/">Назад</a>
+</body>
+</html>
