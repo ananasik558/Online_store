@@ -1,0 +1,15 @@
+{% extends  'base.html' %}
+
+{% block  title %}
+    Авторизация
+{% endblock %}
+
+{% block  content %}
+<h1> Вход </h1>
+    <form method="post" enctype="multipart/form-data" class="form-control d-flex flex-column gap-2">
+        {{ form.csrf_token }}
+        {{ form.login(class="form-control", placeholder="Логин") }}
+        {{ form.password(class="form-control", placeholder="Пароль") }}
+        {{ form.submit(class="btn btn-success") }}        
+
+{% endblock %}

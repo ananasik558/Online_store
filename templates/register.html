@@ -1,0 +1,20 @@
+{% extends  'base.html' %}
+
+{% block  title %}
+    Регистрация
+{% endblock %}
+
+{% block  content %}
+    <h1> Регистрация </h1>
+    <form method="post" enctype="multipart/form-data" class="form-control d-flex flex-column gap-2">
+    {{ form.csrf_token }}
+    {{ form.login (class= "form-control", placeholder="Логин") }} 
+    {{ form.password (class= "form-control", placeholder="Пароль") }} 
+    {{ form.confirm_password (class="form-control", placeholder="Подтвердите пароль") }} 
+    {{ form.submit(class="btn btn-success") }}
+    </form>
+
+    <h1> Авторизация </h1>
+    <button type="button" class="btn btn-outline-primary me-2" onclick="window.location.href='http://127.0.0.1:5000/login';">Вход</button>
+
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends  'base.html' %}
+
+{% block  title %}
+Добавление Авто
+{% endblock %}
+
+{% block  content %}
+<h1> Добавление Авто </h1>
+<form method="post"class="form-control" action="/create">
+    <input type="text" name="product_name" placeholder= "Введите товар"class="form-control"><br>
+    <input type="number" name="count" placeholder= "Введите колличество"class="form-control"><br>
+    <input type="number" name="cost" placeholder= "Введите цену"class="form-control"><br>
+    <button type="submit" class="btn btn-primary">Добавить</button>
+</form>
+{% endblock %}

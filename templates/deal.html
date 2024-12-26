@@ -1,0 +1,15 @@
+{% extends  'base.html' %}
+
+{% block  title %}
+    Сделка
+{% endblock %}
+
+{% block  content %}
+<h1> Создание заказа </h1>
+    <form method="post"class="form-control" action="/deal">
+        <input type="text" name="name" placeholder="ФИ0" class="form-control"><br>
+        <input type="text" name="phone_number" placeholder="Номер телефона" class="form-control"><br>
+        <input type="text" name="product_name" placeholder="Кансоль" class="form-control"><br>        
+        <button type="submit" class="btn btn-primary">Заказать</button>
+    </form>
+{% endblock %}
