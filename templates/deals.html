@@ -5,37 +5,40 @@
 {% endblock %}
 
 {% block  content %}
-<h1> Заказы </h1>
-<table>
-    <thead>
-        <tr>
+<h1 class="mt-4 mb-4 text-center">Список заказов</h1>
+<div class="table-responsive">
+    <table class="table table-bordered table-striped">
+        <thead class="thead-dark">
+            <tr>
+                {% if current_user.role == 'admin' %}
+                    <th scope="col">Товары</th>
+                    <th scope="col">ID клиента</th>
+                    <th scope="col">Дата</th>
+                {% else %}
+                    <th scope="col">Товары</th>
+                    <th scope="col">Дата</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody> 
             {% if current_user.role == 'admin' %}
-                <th>Авто</th>
-                <th>client_id</th>
-                <th>Дата</th>
-            {% else %}
-                <th>Авто</th> 
-                <th>Дата</th> 
-            {% endif %}
-        </tr> 
-    </thead>
-    <tbody> 
-        {% if current_user.role == 'admin' %}
-            <tr>
                 {% for orders in order %}
-                    <td>{{orders.product_name}}</td> 
-                    <td>{{orders.client_id}}</td>  
-                    <td>{{orders.created_at}}</td>
+                    <tr>
+                        <td>{{orders.product_name}}</td> 
+                        <td>{{orders.client_id}}</td>  
+                        <td>{{orders.created_at.strftime('%Y-%m-%d %H:%M:%S')}}</td>
+                    </tr>
                 {% endfor %}
-            <tr>
-        {% else %}  
-            <tr>
+            {% else %}  
                 {% for orders in order %}
-                    <td>{{orders.product_name}}</td> 
-                    <td>{{orders.created_at}}</td>  
-                {% endfor %}      
-            </tr> 
-        {% endif %} 
-    </tbody>
-</table> 
+                    <tr>
+                        <td>{{orders.product_name}}</td> 
+                        <td>{{orders.created_at.strftime('%Y-%m-%d %H:%M:%S')}}</td>  
+                    </tr>
+                {% endfor %}       
+            {% endif %} 
+        </tbody>
+    </table>
+</div>
+ 
 {% endblock %}

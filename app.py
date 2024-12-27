@@ -12,8 +12,6 @@ from flask_login import UserMixin, current_user, login_required, login_user, Log
 from flask_bcrypt import Bcrypt
 from datetime import datetime
 import pandas as pd
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.feature_extraction.text import CountVectorizer
 from catboost import CatBoostClassifier
 #import psycopg2 
 
@@ -49,13 +47,12 @@ def export_orders_data():
                 'order_date': order.created_at
             })
 
-    # Создание DataFrame и экспорт в CSV
     df = pd.DataFrame(product_data)
     df.to_csv('orders_data.csv', index=False)
 
 @login_manager.user_loader 
 def load_user(user_id):
-	return Users.query.get(user_id) 
+	return db.session.get(Users, user_id)
 
 class Client (db.Model, UserMixin):
 	id = db.Column (db.Text, primary_key=True)
@@ -248,6 +245,12 @@ def deal():
 
 def get_product_recommendations(user_id):
     df = pd.read_csv("orders_data.csv")
+    
+    if user_id not in set(df['client_id']):
+        print(f"User {user_id} not found in recommendation dataset.")
+        return []  
+
+	
     pivot_table = df.pivot_table(index='client_id', columns='product_name', aggfunc='size', fill_value=0)
     
     X = pivot_table.values
@@ -296,7 +299,8 @@ def recommendations():
         flash("Мы столкнулись с проблемой при генерации рекомендаций.", "danger")
         return redirect('/')
 
-if __name__ == '__main__': 
-	app.run(debug=True) 
-
+if __name__ == '__main__':
+    with app.app_context():
+        export_orders_data()  
+    app.run(debug=True) 
 
